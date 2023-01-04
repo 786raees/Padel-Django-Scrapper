@@ -1,0 +1,396 @@
+{% load static crispy_forms_tags %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Title</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<!-- Bootstrap CSS v5.2.1 -->
+  <style>
+    
+  </style>
+  <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+  {% comment %} <script src="https://unpkg.com/htmx.org@1.8.4"></script> {% endcomment %}
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+
+</head>
+
+<body>
+  <header>
+    <!-- place navbar here -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid d-flex align-item-center justify-content-center">
+        <a class="navbar-brand" href="/">Padel Courts</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="row">
+        <div class="col-12 pt-4">
+          
+        <div class="col-12 my-3">
+          <button data-bs-toggle="modal" data-bs-target="#filter" class="btn filter-btn btn-primary">
+            <i class="fa fa-filter" aria-hidden="true"></i>
+          </button>
+        </div>
+        </div>
+      </div>
+      <div class="row flex justify-content-center align-item-center">
+        <!-- Booked Hours Block -->
+        <div class="card col-3 m-3 bg-primary text-white text-center p-3">
+          <div class="card-body">
+            <h5 class="card-title">Booked Hours</h5>
+            <p class="card-text" id="booked-hours">{{total_booked_hours}}</p>
+          </div>
+        </div>
+        <!-- Available Hours Block -->
+        <div class="card col-3 m-3 bg-danger text-white text-center p-3">
+          <div class="card-body">
+            <h5 class="card-title">Available Hours</h5>
+            <p class="card-text" id="available-hours">{{total_available_hours}}</p>
+          </div>
+        </div>
+        <!-- Utilization Rate Block -->
+        <div class="card col-3 m-3 bg-warning text-white text-center p-3">
+          <div class="card-body">
+            <h5 class="card-title">Utilization Rate</h5>
+            <p class="card-text" id="utilization-rate">{{ total_utiliation_rate }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12 data-chart mt-5">
+          <canvas id="data-chart"></canvas>
+        </div>
+      </div>
+      <div class="row m-4">
+        <div class="col-12">
+          <div class="card border-primary">
+            <div class="card-body">
+              <h4 class="card-title">Padel</h4>
+                
+                <div class="table-responsxive table-body">
+                <table class="table table-striped
+                table-body
+                table-hover	
+                table-bordered
+                table-fixed
+                table-primary
+                align-middle">
+                  <thead class="table-light header-fixed">
+                    <tr>
+                      <th>
+                        {% if "name" == request.GET.sort_by %}
+                          
+                        <a href="{% url 'home' %}?sort_by=-name">Name
+                          <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'home' %}?sort_by=name">Name
+                          <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                      </th>
+                      <th>
+                        {% if "city" == request.GET.sort_by %}
+                        <a href="{% url 'home' %}?sort_by=-city">City
+                          <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'home' %}?sort_by=city">City
+                          <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                      </th>
+                      {% comment %} <th>
+                        {% if "country" == request.GET.sort_by %}
+                        <a href="{% url 'home' %}?sort_by=-country">Country
+                          <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'home' %}?sort_by=country">Country
+                          <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                      </th> {% endcomment %}
+                      <th>
+                        {% if "price_30_min" == request.GET.sort_by %}
+                        <a href="{% url 'home' %}?sort_by=-price_30_min">Price 30 min
+                          <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'home' %}?sort_by=price_30_min">Price 30 min
+                          <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                      </th>
+                      <th>
+                        {% if "price_60_min" == request.GET.sort_by %}
+                        <a href="{% url 'home' %}?sort_by=-price_60_min">Price 60 min
+                          <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'home' %}?sort_by=price_60_min">Price 60 min
+                          <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                      </th>
+                      <th>
+                        {% if "price_90_min" == request.GET.sort_by %}
+                        <a href="{% url 'home' %}?sort_by=-price_90_min">Price 90 min
+                          <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'home' %}?sort_by=price_90_min">Price 90 min
+                          <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                      </th>
+                      <th>
+                        {% if "price_unit" == request.GET.sort_by %}
+                        <a href="{% url 'home' %}?sort_by=-price_unit">Price Unit
+                          <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'home' %}?sort_by=price_unit">Price Unit
+                          <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                      </th>
+                      <th>
+                        {% if "record__no_of_courts" == request.GET.sort_by %}
+                        <a href="{% url 'home' %}?sort_by=-record__no_of_courts"># Of Courts
+                          <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'home' %}?sort_by=record__no_of_courts"># Of Courts
+                          <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                      </th>
+                      <th>
+                        {% if "record__available_hours" == request.GET.sort_by %}
+                        <a href="{% url 'home' %}?sort_by=-record__available_hours">Available Hours
+                          <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'home' %}?sort_by=record__available_hours">Available Hours
+                          <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                      </th>
+                      <th>
+                        {% if "record__booked_hours" == request.GET.sort_by %}
+                        <a href="{% url 'home' %}?sort_by=-record__booked_hours">Booked Hours
+                          <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'home' %}?sort_by=record__booked_hours">Booked Hours
+                          <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                      </th>
+                      <th>
+                        {% if "record__utiliation_rate" == request.GET.sort_by %}
+                        <a href="{% url 'home' %}?sort_by=-record__utiliation_rate">Utilization Rate
+                          <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'home' %}?sort_by=record__utiliation_rate">Utilization Rate
+                          <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                      </th>
+                      <th>
+                        URL
+                      </th>
+                    </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                      {% for pad in filters.qs %}
+                        
+                      <tr class="table-primary" >
+                        <td scope="row">{{pad.name}}</td>
+                        <td>{{pad.city}}</td>
+                        {% comment %} <td></td> {% endcomment %}
+                        <td>
+                          {% if pad.price_30_min %}
+                          {{pad.price_30_min}}
+                          {% else %}
+                          -
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if pad.price_60_min %}
+                          {{pad.price_60_min}}
+                          {% else %}
+                          -
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if pad.price_90_min %}
+                          {{pad.price_90_min}}
+                          {% else %}
+                          -
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if pad.price_unit %}
+                          {{pad.price_unit}}
+                          {% else %}
+                          -
+                          {% endif %}
+                        <td>{{pad.record_set.last.no_of_courts}}</td>
+                        <td>{{pad.record_set.last.available_hours}}</td>
+                        <td>{{pad.record_set.last.booked_hours}}</td>
+                        <td>{{pad.record_set.last.utiliation_rate}} {% if pad.record_set.last.utiliation_rate %}%{% endif %}</td>
+                        <td>
+                          <a href="{{pad.url}}" target="_blank">
+                            <i class="fa fa-link" aria-hidden="true"></i>
+                          </a>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+
+
+<!-- Modal Body -->
+<!-- if you want to close by clicking outside the modal, delete the last endpoint:data-bs-backdrop and data-bs-keyboard -->
+<div class="modal fade" id="filter" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-labelledby="modalTitleId" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitleId">Apply Filters</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="get" id='filter-form'>
+          <div class="row">
+          <div class="col-3">
+            {{filters.form.name|as_crispy_field}}
+            <datalist id="padel-list">
+              {% for pad in padels %}
+              <option value="{{pad.name}}">
+              {% endfor %}
+            </datalist>            
+          </div>
+          <div class="col-3">
+            {{filters.form.from_date|as_crispy_field}}
+          </div>
+          <div class="col-3">
+            {{filters.form.city|as_crispy_field}}
+            <datalist id="city-list">
+              {% for pad in padels %}
+              <option value="{{pad.city}}">
+              {% endfor %}
+            </datalist>   
+          </div>
+          </div>
+          <hr>
+          <div class="row">
+          <div class="col-3">
+            {{filters.form.no_of_courts_gte|as_crispy_field}}
+          </div>
+          <div class="col-3">
+            {{filters.form.no_of_courts_lte|as_crispy_field}}
+          </div>
+          <div class="col-3">
+            {{filters.form.utiliation_rate_gte|as_crispy_field}}
+          </div>
+          <div class="col-3">
+            {{filters.form.utiliation_rate_lte|as_crispy_field}}
+          </div>
+        </div>
+      </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" form="filter-form" class="btn btn-primary">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+  integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+  integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
+</script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    var chartData = JSON.parse('{{ chart_data | escapejs }}');
+    let name = document.getElementById('id_name');
+    let city = document.getElementById('id_city');
+    name.setAttribute('list', 'padel-list')
+    city.setAttribute('list', 'city-list')
+    var month_list = Object.keys(chartData);
+    var data = {
+      labels: month_list,
+      datasets: [
+        {
+          label: "Booked Hours",
+          data: month_list.map(function(key) {
+            return chartData[key]["booked_hours_sum"];
+        }),
+        },
+        {
+          label: "Available Hours",
+          data: month_list.map(function(key) {
+            return chartData[key]["available_hours_sum"];
+        }),
+      },
+      {
+        label: "Utilization Rate",
+        data: month_list.map(function(key) {
+          return chartData[key]["utiliation_rate_sum"];
+      }),
+        },
+      ],
+    };
+  
+
+    const ctx = document.getElementById('data-chart');
+
+    new Chart(ctx, {
+      type: 'line',
+      data: data,
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  
+  </script>
+
+</body>
+
+</html>
