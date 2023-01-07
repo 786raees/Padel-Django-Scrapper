@@ -2,6 +2,7 @@ from django.shortcuts import render
 from .models import PadelClub, Record
 from .filters import PadelClubFilter
 from django.db.models import Sum, Count
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db.models.functions import TruncMonth
 from django.utils import timezone

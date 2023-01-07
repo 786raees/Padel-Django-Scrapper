@@ -219,7 +219,7 @@
                     <tbody class="table-group-divider">
                       {% for pad in filters.qs %}
                         
-                      <tr class="table-primary" >
+                      <tr class="table-{% if pad.record_set.last.no_of_courts == 0 %}danger{% else %}primary{% endif %}" >
                         <td scope="row">{{pad.name}}</td>
                         <td>{{pad.city}}</td>
                         {% comment %} <td></td> {% endcomment %}
@@ -250,16 +250,22 @@
                           {% else %}
                           -
                           {% endif %}
-                        <td>{{pad.record_set.last.no_of_courts}}</td>
-                        <td>{{pad.record_set.last.available_hours}}</td>
-                        <td>{{pad.record_set.last.booked_hours}}</td>
-                        <td>{{pad.record_set.last.utiliation_rate}} {% if pad.record_set.last.utiliation_rate %}%{% endif %}</td>
-                        <td>
-                          <a href="{{pad.url}}" target="_blank">
-                            <i class="fa fa-link" aria-hidden="true"></i>
-                          </a>
-                        </td>
-                      </tr>
+                          
+                          {% if pad.record_set.last.no_of_courts == 0 %}
+                            
+                          <td class="text-center" colspan="5">No Data Available</td>
+                          {% else %}
+                          <td>{{pad.record_set.last.no_of_courts}}</td>
+                          <td>{{pad.record_set.last.available_hours}}</td>
+                          <td>{{pad.record_set.last.booked_hours}}</td>
+                          <td>{{pad.record_set.last.utiliation_rate}} {% if pad.record_set.last.utiliation_rate %}%{% endif %}</td>
+                          <td>
+                            <a href="{{pad.url}}" target="_blank">
+                              <i class="fa fa-link" aria-hidden="true"></i>
+                            </a>
+                          </td>
+                        </tr>
+                        {% endif %}
                       {% endfor %}
                     </tbody>
                 </table>

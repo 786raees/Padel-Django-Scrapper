@@ -3,10 +3,29 @@ version: '3.8'
 services:
   web:
     build: ./padel
+    # command: gunicorn padel_app.wsgi:application --bind 0.0.0.0:8000
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./padel/:/usr/src/app/
     ports:
       - 8000:8000
+    depends_on:
+      - redis
     # env_file:
     #   - ./.env.dev
+  redis:
+    image: redis:alpine
+  celery:
+    build: ./padel
+    command: celery -A padel_app worker -l info
+    volumes:
+      - ./padel/:/usr/src/app/
+    depends_on:
+      - redis
+  celery-beat:
+    build: ./padel
+    command: celery -A padel_app beat -l info
+    volumes:
+      - ./padel/:/usr/src/app/
+    depends_on:
+      - redis

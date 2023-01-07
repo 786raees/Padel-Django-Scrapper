@@ -20,12 +20,12 @@ class PlaytomicSpider(scrapy.Spider):
 
     def parse(self, response):
         json_data = json.loads(response.body)
-        data = json_data[-1]
-        tenant_id = data.get('tenant_id')
-        today = get_today()
+        for data in json_data:
+            tenant_id = data.get('tenant_id')
+            today = get_today()
 
-        url = f"https://playtomic.io/api/v1/availability?user_id=me&tenant_id={tenant_id}&sport_id=PADEL&local_start_min={today}T00%3A00%3A00&local_start_max={today}T23%3A59%3A59"
-        yield scrapy.Request(url=url, callback=self.parse_slot, cb_kwargs=data)
+            url = f"https://playtomic.io/api/v1/availability?user_id=me&tenant_id={tenant_id}&sport_id=PADEL&local_start_min={today}T00%3A00%3A00&local_start_max={today}T23%3A59%3A59"
+            yield scrapy.Request(url=url, callback=self.parse_slot, cb_kwargs=data)
 
 
     async def parse_slot(self, response, **kwargs):
@@ -54,6 +54,10 @@ class PlaytomicSpider(scrapy.Spider):
         data = kwargs
         print("++++++++++++++++++++")
         print(data)
+        print(booked_hour)
+        print(slot_count)
+        print(minutes)
+        print(json_data)
         print("++++++++++++++++++++")
         padel, created = await PadelClub.objects.aget_or_create(
             name=data.get('tenant_name'),

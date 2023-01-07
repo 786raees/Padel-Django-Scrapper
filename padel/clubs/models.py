@@ -8,9 +8,9 @@ class PadelClub(models.Model):
     city = models.CharField(max_length=100)
     address = models.CharField(max_length=300)
     url = models.CharField(max_length=300)
-    price_30_min = models.IntegerField(null=True, blank=True)
-    price_60_min = models.IntegerField(null=True, blank=True)
-    price_90_min = models.IntegerField(null=True, blank=True)
+    price_30_min = models.CharField(max_length=300, null=True, blank=True)
+    price_60_min = models.CharField(max_length=300, null=True, blank=True)
+    price_90_min = models.CharField(max_length=300, null=True, blank=True)
     price_unit = models.CharField(max_length=300, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -31,9 +31,13 @@ class Record(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.utiliation_rate:
-            total_hours = self.available_hours
-            self.utiliation_rate = self.booked_hours / total_hours * 100
-        super().save(*args, **kwargs)
+            try:
+                total_hours = self.available_hours
+                self.utiliation_rate = self.booked_hours / total_hours * 100
+            except Exception:
+                self.utiliation_rate = 0
+            super().save(*args, **kwargs)
+
     
     def __str__(self):
         date = self.created_at.strftime('%Y-%m-%d %H:%M')
