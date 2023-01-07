@@ -58,7 +58,10 @@ def home(request):
         if pad.record_set.last(): # type: ignore
             total_booked_hours += pad.record_set.last().booked_hours or 0  # type: ignore
             total_available_hours += pad.record_set.last().available_hours or 0  # type: ignore
-    util_rate = (total_booked_hours / total_available_hours) * 100
+    try:
+        util_rate = (total_booked_hours / total_available_hours) * 100
+    except Exception:
+        util_rate = 0
     context = {
         "filters": filters,
         "padels": padels,
