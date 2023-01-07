@@ -38,6 +38,10 @@ def get_time_def(hour):
 class MatchiSpider(scrapy.Spider):
     name = "matchi"
     # start_urls = ['https://www.matchi.se/book/findFacilities']
+    def __init__(self, name=None, **kwargs):
+        self.cities = list(City.objects.all().values_list('name'))
+        
+        super().__init__(name, **kwargs)
     def start_requests(self):
         login_url = "https://www.matchi.se/j_spring_security_check"
         yield FormRequest(
@@ -56,7 +60,7 @@ class MatchiSpider(scrapy.Spider):
         pages, remaining_items = divmod(items, 10)
         if remaining_items > 0:
             pages += 1
-            
+
         for page in range(pages):
             yield scrapy.Request(
                 url=f"https://www.matchi.se/book/findFacilities?offset={page}0", callback=self.parse
@@ -80,7 +84,8 @@ class MatchiSpider(scrapy.Spider):
                 "div.slots-container a::attr(href)"
             ).getall()
             land = container.xpath(".//div/p[@class='text-muted text-sm']/text()").get()
-            if not City.objects.filter(name__icontains=land):
+            land = land.strip()
+            if (land,) not in self.cities:
                 continue
 
             
