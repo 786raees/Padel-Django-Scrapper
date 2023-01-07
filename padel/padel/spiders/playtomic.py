@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Dict
 from padel_app.wsgi import *
 from clubs.models import PadelClub, Record
+from location.models import City
 
 def format_address(address: Dict) -> str:
     return ''
@@ -18,14 +19,24 @@ class PlaytomicSpider(scrapy.Spider):
     name = 'playtomic'
     start_urls = ['https://playtomic.io/api/v1/tenants']
 
+    def __init__(self, name=None, **kwargs):
+        self.cities = [i[0].lower() for i in list(City.objects.all().values_list('name'))]
+        super().__init__(name, **kwargs)
+
     def parse(self, response):
         json_data = json.loads(response.body)
         for data in json_data:
-            tenant_id = data.get('tenant_id')
-            today = get_today()
+            
+            if land:= data.get('address'):
+                if land:= land.get('city'):
+                    land = land.strip()
+                    if land.lower() not in self.cities:
+                        continue
+                    tenant_id = data.get('tenant_id')
+                    today = get_today()
 
-            url = f"https://playtomic.io/api/v1/availability?user_id=me&tenant_id={tenant_id}&sport_id=PADEL&local_start_min={today}T00%3A00%3A00&local_start_max={today}T23%3A59%3A59"
-            yield scrapy.Request(url=url, callback=self.parse_slot, cb_kwargs=data)
+                    url = f"https://playtomic.io/api/v1/availability?user_id=me&tenant_id={tenant_id}&sport_id=PADEL&local_start_min={today}T00%3A00%3A00&local_start_max={today}T23%3A59%3A59"
+                    yield scrapy.Request(url=url, callback=self.parse_slot, cb_kwargs=data)
 
 
     async def parse_slot(self, response, **kwargs):
