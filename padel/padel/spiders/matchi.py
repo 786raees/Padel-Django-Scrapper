@@ -3,7 +3,7 @@ import scrapy, re, requests
 from scrapy.http import FormRequest
 from padel_app.wsgi import *
 from clubs.models import PadelClub, Record
-
+from location.models import City
 
 def get_time_def(hour):
     width = hour.css("::attr(title)").get()
@@ -56,7 +56,6 @@ class MatchiSpider(scrapy.Spider):
         pages, remaining_items = divmod(items, 10)
         if remaining_items > 0:
             pages += 1
-        pages = 5
         for page in range(pages):
             yield scrapy.Request(
                 url=f"https://www.matchi.se/book/findFacilities?offset={page}0", callback=self.parse
@@ -80,6 +79,9 @@ class MatchiSpider(scrapy.Spider):
                 "div.slots-container a::attr(href)"
             ).getall()
             land = container.xpath(".//div/p[@class='text-muted text-sm']/text()").get()
+            if not City.objects.filter(name__icontains=land):
+                continue
+
             
             for slot_url in slot_urls:
                 with contextlib.suppress(Exception):
