@@ -56,6 +56,7 @@ class MatchiSpider(scrapy.Spider):
         pages, remaining_items = divmod(items, 10)
         if remaining_items > 0:
             pages += 1
+            
         for page in range(pages):
             yield scrapy.Request(
                 url=f"https://www.matchi.se/book/findFacilities?offset={page}0", callback=self.parse
