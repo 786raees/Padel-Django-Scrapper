@@ -255,7 +255,7 @@
                           <td>{{pad.last_record_no_of_courts}}</td>
                           <td>{{pad.last_record_available_hours}}</td>
                           <td>{{pad.last_record_booked_hours}}</td>
-                          <td>{{pad.last_record_utiliation_rate}} {% if pad.last_record_utiliation_rate %}%{% endif %}</td>
+                          <td>{{pad.last_record_utiliation_rate|floatformat:2 }} {% if pad.last_record_utiliation_rate %}%{% endif %}</td>
                           <td>
                             <a href="{{pad.url}}" target="_blank">
                               <i class="fa fa-link" aria-hidden="true"></i>
