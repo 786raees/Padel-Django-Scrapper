@@ -10,11 +10,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
 <!-- Bootstrap CSS v5.2.1 -->
-  <style>
-    
-  </style>
+
   <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
-  {% comment %} <script src="https://unpkg.com/htmx.org@1.8.4"></script> {% endcomment %}
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="{% static 'style.css' %}">
 
@@ -219,7 +216,7 @@
                     <tbody class="table-group-divider">
                       {% for pad in filters.qs %}
                         
-                      <tr class="table-{% if pad.record_set.last.no_of_courts == 0 %}danger{% else %}primary{% endif %}" >
+                      <tr class="table-{% if pad.last_record_no_of_courts == 0 %}danger{% else %}primary{% endif %}" >
                         <td scope="row">{{pad.name}}</td>
                         <td>{{pad.city}}</td>
                         {% comment %} <td></td> {% endcomment %}
@@ -251,14 +248,14 @@
                           -
                           {% endif %}
                           
-                          {% if pad.record_set.last.no_of_courts == 0 %}
+                          {% if pad.last_record_no_of_courts == 0 %}
                             
                           <td class="text-center" colspan="5">No Data Available</td>
                           {% else %}
-                          <td>{{pad.record_set.last.no_of_courts}}</td>
-                          <td>{{pad.record_set.last.available_hours}}</td>
-                          <td>{{pad.record_set.last.booked_hours}}</td>
-                          <td>{{pad.record_set.last.utiliation_rate}} {% if pad.record_set.last.utiliation_rate %}%{% endif %}</td>
+                          <td>{{pad.last_record_no_of_courts}}</td>
+                          <td>{{pad.last_record_available_hours}}</td>
+                          <td>{{pad.last_record_booked_hours}}</td>
+                          <td>{{pad.last_record_utiliation_rate}} {% if pad.last_record_utiliation_rate %}%{% endif %}</td>
                           <td>
                             <a href="{{pad.url}}" target="_blank">
                               <i class="fa fa-link" aria-hidden="true"></i>

@@ -3,8 +3,8 @@ version: '3.8'
 services:
   web:
     build: ./padel
-    command: gunicorn padel_app.wsgi:application --bind 0.0.0.0:8000
-    # command: python manage.py runserver 0.0.0.0:8000
+    # command: gunicorn padel_app.wsgi:application --bind 0.0.0.0:8000
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./padel/:/usr/src/app/
     ports:

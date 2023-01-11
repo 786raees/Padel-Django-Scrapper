@@ -2,7 +2,7 @@ import contextlib
 from django.shortcuts import render
 from .models import PadelClub, Record
 from .filters import PadelClubFilter
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Max, Subquery, OuterRef
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db.models.functions import TruncMonth
@@ -31,24 +31,31 @@ def add_city():
 def home(request):
     
     current_year = timezone.now().year
+    last_record = Record.objects.filter(padel_club=OuterRef('pk')).order_by('-created_at').values('no_of_courts', 'booked_hours', 'available_hours','utiliation_rate')[:1]
+    padels = PadelClub.objects.annotate(
+        last_record_no_of_courts=Subquery(last_record.values('no_of_courts')),
+        last_record_booked_hours=Subquery(last_record.values('booked_hours')),
+        last_record_available_hours=Subquery(last_record.values('available_hours')),
+        last_record_utiliation_rate=Subquery(last_record.values('utiliation_rate')),
+    )
 
     if sort_by := request.GET.get("sort_by"):
         padels = PadelClub.objects.all().order_by(sort_by)
     else:
-        padels = PadelClub.objects.all()
+        padels = padels.prefetch_related('record_set')
 
     filters = PadelClubFilter(request.GET, queryset=padels)
-    if filters.qs:
-        records_id_list = [padel.record_set.last().id for padel in filters.qs if padel.record_set.last()]
-    else:
-        records_id_list = [padel.record_set.last().id for padel in padels if padel.record_set.last()] # type: ignore
+    qs = filters.qs
+    records_id_list = qs.annotate(
+                    last_record_id=Max("record__id")
+                    ).values_list("last_record_id", flat=True)
     from_date_min = request.GET.get('from_date_min')
     from_date_max = request.GET.get('from_date_max')
     records = Record.objects.filter(id__in=records_id_list, created_at__year=current_year)
     if from_date_min:
-        records = records.filter(created_at__gt=from_date_min)
+        records = records.filter(created_at__gte=from_date_min)
     if from_date_max:
-        records = records.filter(created_at__lt=from_date_max)
+        records = records.filter(created_at__lte=from_date_max)
 
 
     records_by_month = records.annotate(month=TruncMonth('created_at')).values('month').annotate(booked_hours_sum=Sum('booked_hours')).annotate(available_hours_sum=Sum('available_hours')).annotate(utiliation_rate_sum=Sum('utiliation_rate')).order_by('month')
@@ -74,10 +81,10 @@ def home(request):
 
     total_booked_hours = 0
     total_available_hours = 0
-    for pad in filters.qs:
-        if pad.record_set.last(): # type: ignore
-            total_booked_hours += pad.record_set.last().booked_hours or 0  # type: ignore
-            total_available_hours += pad.record_set.last().available_hours or 0  # type: ignore
+    for pad in qs:
+        # if pad.record_set.last(): # type: ignore
+        total_booked_hours += pad.last_record_booked_hours or 0  # type: ignore
+        total_available_hours += pad.last_record_available_hours or 0  # type: ignore
     try:
         util_rate = (total_booked_hours / total_available_hours) * 100
     except Exception:
