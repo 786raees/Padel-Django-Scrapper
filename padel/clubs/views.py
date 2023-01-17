@@ -54,10 +54,10 @@ def home(request):
     records = Record.objects.filter(id__in=records_id_list, created_at__year=current_year)
     if from_date_min:
         records = records.filter(created_at__gte=from_date_min)
-        qs = qs.filter(records_created_at__gte=from_date_min)
+        qs = qs.filter(record_created_at__gte=from_date_min)
     if from_date_max:
         records = records.filter(created_at__lte=from_date_max)
-        qs = qs.filter(records_created_at__lte=from_date_max)
+        qs = qs.filter(record_created_at__lte=from_date_max)
 
 
     records_by_month = records.annotate(month=TruncMonth('created_at')).values('month').annotate(booked_hours_sum=Sum('booked_hours')).annotate(available_hours_sum=Sum('available_hours')).annotate(utiliation_rate_sum=Sum('utiliation_rate')).order_by('month')
