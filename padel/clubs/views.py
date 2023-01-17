@@ -29,7 +29,7 @@ def add_city():
 
 
 def home(request):
-    add_city()
+    # add_city()
     current_year = timezone.now().year
     last_record = Record.objects.filter(padel_club=OuterRef('pk')).order_by('-created_at').values('no_of_courts', 'booked_hours', 'available_hours','utiliation_rate')[:1]
     padels = PadelClub.objects.annotate(
