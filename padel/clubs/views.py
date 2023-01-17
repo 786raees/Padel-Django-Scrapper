@@ -45,7 +45,7 @@ def home(request):
         padels = padels.prefetch_related('record_set')
 
     filters = PadelClubFilter(request.GET, queryset=padels)
-    qs = filters.qs
+    qs = filters.qs.distinct()
     records_id_list = qs.annotate(
                     last_record_id=Max("record__id")
                     ).values_list("last_record_id", flat=True)
