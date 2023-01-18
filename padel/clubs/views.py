@@ -78,8 +78,8 @@ def home(request):
         month = month.strftime('%h-%Y')
 
         chart_data[month]["booked_hours_sum"] = float(month_data['booked_hours_sum'])
-        chart_data[month]["utiliation_rate_sum"] = float(month_data['utiliation_rate_sum'])
         chart_data[month]["available_hours_sum"] = float(month_data['available_hours_sum'])
+        chart_data[month]["utiliation_rate_sum"] = (float(month_data['booked_hours_sum']) / float(month_data['available_hours_sum'])) * 100
 
 
     total_booked_hours = 0
