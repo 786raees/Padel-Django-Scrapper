@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_filters',
     'crispy_forms',
+    'django_seed',
 
 ]
 

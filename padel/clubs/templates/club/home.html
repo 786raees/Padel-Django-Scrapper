@@ -214,7 +214,7 @@
                     </tr>
                     </thead>
                     <tbody class="table-group-divider">
-                      {% for pad in qs %}
+                      {% for pad in padel_clubs %}
                       <tr class="table-{% if pad.last_record_no_of_courts == 0 %}danger{% else %}primary{% endif %}" >
                         <td scope="row">{{pad.name}}</td>
                         <td>{{pad.city}}</td>
