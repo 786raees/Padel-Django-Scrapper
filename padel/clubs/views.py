@@ -46,6 +46,7 @@ def home(request):
 
     filters = PadelClubFilter(request.GET, queryset=padels)
     qs = filters.qs.distinct()
+    
     records_id_list = qs.annotate(
                     last_record_id=Max("record__id")
                     ).values_list("last_record_id", flat=True)
@@ -93,6 +94,7 @@ def home(request):
         util_rate = 0
     context = {
         "filters": filters,
+        "qs": qs,
         "padels": padels,
         "total_booked_hours": total_booked_hours,
         "total_available_hours": total_available_hours,
