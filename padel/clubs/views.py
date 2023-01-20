@@ -1,5 +1,5 @@
 import contextlib
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.shortcuts import render
 from .models import PadelClub, Record
 from .filters import PadelClubFilter
@@ -33,11 +33,16 @@ def add_dummy():
 
 
 def home(request):
-    # TODO
-    from_date_min = request.GET.get('from_date_min', datetime(1023,1,1)) 
-    from_date_max = request.GET.get('from_date_max', datetime.now()) 
+    try:
+        from_date_min = datetime.strptime(request.GET.get('from_date'), '%Y-%m-%d') - timedelta(days=1)
+    except Exception:
+        from_date_min = datetime(1023,1,1)
+    try:
+        from_date_max = datetime.strptime(request.GET.get('to_date'), '%Y-%m-%d') - timedelta(days=1)
+    except Exception:
+        from_date_max = datetime.now()
 
-    last_record_available_hours_subquery = Record.objects.filter(created_at__range=[from_date_min,from_date_max], padel_club=OuterRef('pk')).order_by('-created_at')
+    last_record_available_hours_subquery = Record.objects.filter(created_at__lte=from_date_max, created_at__gte=from_date_min, padel_club=OuterRef('pk')).order_by('-created_at')
     padel_clubs = PadelClub.objects.annotate(
         last_record_available_hours=Subquery(last_record_available_hours_subquery.values('available_hours')[:1]),
         last_record_booked_hours=Subquery(last_record_available_hours_subquery.values('booked_hours')[:1]),

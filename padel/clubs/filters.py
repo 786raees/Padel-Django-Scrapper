@@ -26,10 +26,17 @@ class PadelClubFilter(django_filters.FilterSet):
         lookup_expr='gte',
         label="Utilization Rate From",
     )
-    from_date = django_filters.DateFromToRangeFilter(
+    from_date = django_filters.DateFilter(
         field_name="record__created_at",
-        label="From/To Data",
-        widget=django_filters.widgets.RangeWidget(attrs={"type": "date"}), # type: ignore
+        label="From Data",
+        lookup_expr="gte",
+        # widget=django_filters.widgets.RangeWidget(attrs={"type": "date"}), # type: ignore
+    )
+    to_date = django_filters.DateFilter(
+        field_name="record__created_at",
+        label="To Data",
+        lookup_expr="lte",
+        # widget=django_filters.widgets.RangeWidget(attrs={"type": "date"}), # type: ignore
     )
 
     class Meta:

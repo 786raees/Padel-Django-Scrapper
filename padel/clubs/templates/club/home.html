@@ -299,6 +299,9 @@
             {{filters.form.from_date|as_crispy_field}}
           </div>
           <div class="col-3">
+            {{filters.form.to_date|as_crispy_field}}
+          </div>
+          <div class="col-3">
             {{filters.form.city|as_crispy_field}}
             <datalist id="city-list">
               {% for pad in padels %}
@@ -346,6 +349,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
+    document.getElementById("id_from_date").setAttribute("type", "date");
+    document.getElementById("id_to_date").setAttribute("type", "date");
+
     var chartData = JSON.parse('{{ chart_data | escapejs }}');
     let name = document.getElementById('id_name');
     let city = document.getElementById('id_city');
