@@ -3,10 +3,13 @@ from datetime import datetime, timedelta
 from django.shortcuts import render
 from .models import PadelClub, Record
 from .filters import PadelClubFilter
-from django.db.models import Subquery, OuterRef
+from django.db.models import Subquery, OuterRef, Prefetch, Sum
+from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from django.conf import settings
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
+
 import json
 
 def add_city():
@@ -31,32 +34,42 @@ def add_dummy():
     for i in ps:
         Record.objects.create(padel_club=i, no_of_courts=7, available_hours=30, booked_hours=26.5)
 
-
+@cache_page(60 * 60)
 def home(request):
-    try:
-        from_date_min = datetime.strptime(request.GET.get('from_date'), '%Y-%m-%d') - timedelta(days=1)
-    except Exception:
-        from_date_min = datetime(1023,1,1)
-    try:
-        from_date_max = datetime.strptime(request.GET.get('to_date'), '%Y-%m-%d') - timedelta(days=1)
-    except Exception:
-        from_date_max = datetime.now()
+    from_date_min = request.GET.get('from_date')
+    from_date_max = request.GET.get('to_date')
+    records_qs = Record.objects.select_related('padel_club')
+    if from_date_min:
+        from_date_min = datetime.strptime(from_date_min, '%Y-%m-%d')
+        records_qs = records_qs.filter(created_at__gte=from_date_min)
+    if from_date_max:
+        from_date_max = datetime.strptime(from_date_max, '%Y-%m-%d')
+        records_qs = records_qs.filter(created_at__lte=from_date_max)
 
-    last_record_available_hours_subquery = Record.objects.filter(created_at__lte=from_date_max, created_at__gte=from_date_min, padel_club=OuterRef('pk')).order_by('-created_at')
-    padel_clubs = PadelClub.objects.annotate(
-        last_record_available_hours=Subquery(last_record_available_hours_subquery.values('available_hours')[:1]),
-        last_record_booked_hours=Subquery(last_record_available_hours_subquery.values('booked_hours')[:1]),
-        last_record_no_of_courts=Subquery(last_record_available_hours_subquery.values('no_of_courts')[:1]),
-        last_record_utiliation_rate=Subquery(last_record_available_hours_subquery.values('utiliation_rate')[:1]),
-        last_record_created_at=Subquery(last_record_available_hours_subquery.values('created_at')[:1]),
-        )
+    padel_clubs = PadelClub.objects.prefetch_related(Prefetch('record_set', queryset=records_qs))
+    padel_clubs = padel_clubs.annotate(
+        last_record_available_hours=Subquery(records_qs.filter(padel_club=OuterRef('pk')).order_by('-created_at').values('available_hours')[:1]),
+        last_record_booked_hours=Subquery(records_qs.filter(padel_club=OuterRef('pk')).order_by('-created_at').values('booked_hours')[:1]),
+        last_record_no_of_courts=Subquery(records_qs.filter(padel_club=OuterRef('pk')).order_by('-created_at').values('no_of_courts')[:1]),
+        last_record_utiliation_rate=Subquery(records_qs.filter(padel_club=OuterRef('pk')).order_by('-created_at').values('utiliation_rate')[:1]),
+        last_record_created_at=Subquery(records_qs.filter(padel_club=OuterRef('pk')).order_by('-created_at').values('created_at')[:1]),
+    )
+
     filters = PadelClubFilter(request.GET, padel_clubs)
     padel_clubs = filters.qs.distinct()
-    total_available_hours = float(sum(q.last_record_available_hours for q in padel_clubs))
-    total_booked_hours = float(sum(q.last_record_booked_hours for q in padel_clubs))
+    total_available_hours = float(sum(q.last_record_available_hours for q in padel_clubs if q.last_record_available_hours))
+    total_booked_hours = float(sum(q.last_record_booked_hours for q in padel_clubs if q.last_record_booked_hours))
 
     year = timezone.now().year
+    padel_clubs = padel_clubs.filter(last_record_created_at__year=year)
+
     months = [f"Jan-{year}", f"Feb-{year}", f"Mar-{year}", f"Apr-{year}", f"May-{year}", f"Jun-{year}", f"Jul-{year}", f"Aug-{year}", f"Sep-{year}", f"Oct-{year}", f"Nov-{year}", f"Dec-{year}"]
+
+    data_set = padel_clubs.annotate(month=TruncMonth('last_record_created_at')).values('month').annotate(
+    booked_hours_sum=Sum('last_record_booked_hours'),
+    available_hours_sum=Sum('last_record_available_hours'),
+    utilisation_rate_sum=(Sum('last_record_booked_hours') / Sum('last_record_available_hours')) * 100
+    )
 
     chart_data = {
         month: {
@@ -66,23 +79,23 @@ def home(request):
         }
         for month in months
     }
-    for month_data in range(1, 13):
-        month = months[month_data - 1]
-        padel_clubs_in_month = padel_clubs.filter(last_record_created_at__month=month_data)
-        booked = float(sum(q.last_record_booked_hours for q in padel_clubs_in_month))
-        available = float(sum(q.last_record_available_hours for q in padel_clubs_in_month))
-        chart_data[month]["booked_hours_sum"] = booked
-        chart_data[month]["available_hours_sum"] = available
-        try:
-            chart_data[month]["utiliation_rate_sum"] = (booked / available) * 100
-        except Exception:
-            chart_data[month]["utiliation_rate_sum"] = 0
+
+
+    for month_data in data_set:
+        month = months[month_data['month'].month - 1]
+
+        chart_data[month] = {
+            "booked_hours_sum": float(month_data["booked_hours_sum"] or 0),
+            "available_hours_sum": float(month_data["available_hours_sum"] or 0),
+            "utilisation_rate_sum": float(month_data["utilisation_rate_sum"] or 0),
+        }
 
     try:
         total_utiliation_rate = (total_booked_hours / total_available_hours) * 100
     except Exception:
         total_utiliation_rate = 0
     context = {
+        'padels': PadelClub.objects.all(),
         'filters': filters,
         'padel_clubs': padel_clubs,
         "chart_data": json.dumps(chart_data),

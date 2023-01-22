@@ -38,6 +38,9 @@ class PadelClubFilter(django_filters.FilterSet):
         lookup_expr="lte",
         # widget=django_filters.widgets.RangeWidget(attrs={"type": "date"}), # type: ignore
     )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.queryset = self.queryset.prefetch_related('record_set')
 
     class Meta:
         model = PadelClub

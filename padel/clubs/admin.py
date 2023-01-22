@@ -30,7 +30,7 @@ class PadelClubAdmin(admin.ModelAdmin):
 
     inlines = [RecordInline]
     search_fields = ("name",)
-    date_hierarchy = "created_at"
+    date_hierarchy = "record__created_at"
     ordering = ("-created_at",)
 
 
