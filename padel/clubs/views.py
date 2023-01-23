@@ -74,20 +74,21 @@ def home(request):
     chart_data = {
         month: {
         "booked_hours_sum" : 0.0,
-        "utiliation_rate_sum" : 0.0,
         "available_hours_sum" : 0.0,
+        "utiliation_rate_sum" : 0.0,
         }
         for month in months
     }
 
 
     for month_data in data_set:
+        
         month = months[month_data['month'].month - 1]
 
         chart_data[month] = {
             "booked_hours_sum": float(month_data["booked_hours_sum"] or 0),
             "available_hours_sum": float(month_data["available_hours_sum"] or 0),
-            "utilisation_rate_sum": float(month_data["utilisation_rate_sum"] or 0),
+            "utiliation_rate_sum": float(month_data["utilisation_rate_sum"] or 0),
         }
 
     try:
