@@ -80,6 +80,7 @@ class MatchiSpider(scrapy.Spider):
             url = container.css(
                 "h3.media-heading.h4 a::attr(href)"
             ).get()
+            url = url.split("?")[0]
             slot_urls = container.css(
                 "div.slots-container a::attr(href)"
             ).getall()

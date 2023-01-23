@@ -9,8 +9,18 @@ from django.utils import timezone
 from django.conf import settings
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
-
 import json
+
+def remove_dublicate(request):
+    padels = PadelClub.objects.all()
+    for padel in padels:
+        new_padels = PadelClub.objects.filter(name=padel.name, city=padel.city).exclude(id=padel.id) # type: ignore
+        for new_padel in new_padels:
+            new_records = Record.objects.filter(padel_club=new_padel) # type: ignore
+            new_records.update(padel_club__id=padel.id) # type: ignore
+        new_padels.delete()
+        padel.url = str(padel.url).split("?")[0]
+        padel.save()
 
 def add_city():
     from location.models import Country, City
@@ -54,6 +64,9 @@ def home(request):
         last_record_utiliation_rate=Subquery(records_qs.filter(padel_club=OuterRef('pk')).order_by('-created_at').values('utiliation_rate')[:1]),
         last_record_created_at=Subquery(records_qs.filter(padel_club=OuterRef('pk')).order_by('-created_at').values('created_at')[:1]),
     )
+    if sort_by := request.GET.get("sort_by"):
+        padel_clubs = padel_clubs.order_by(sort_by)
+    
 
     filters = PadelClubFilter(request.GET, padel_clubs)
     padel_clubs = filters.qs.distinct()
@@ -82,7 +95,7 @@ def home(request):
 
 
     for month_data in data_set:
-        
+
         month = months[month_data['month'].month - 1]
 
         chart_data[month] = {

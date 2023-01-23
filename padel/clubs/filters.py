@@ -7,33 +7,33 @@ from .models import PadelClub
 class PadelClubFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(label="Name",lookup_expr="icontains")
     no_of_courts_gte = django_filters.NumberFilter(
-        field_name="record__no_of_courts",
+        field_name="last_record_no_of_courts",
         lookup_expr='gte',
         label="No Of Courts from",
     )
     no_of_courts_lte = django_filters.NumberFilter(
-        field_name="record__no_of_courts",
+        field_name="last_record_no_of_courts",
         lookup_expr='lte',
         label="No Of Courts To",
     )
     utiliation_rate_lte = django_filters.NumberFilter(
-        field_name="record__utiliation_rate",
+        field_name="last_record_utiliation_rate",
         lookup_expr='lte',
         label="Utilization Rate To",
     )
     utiliation_rate_gte = django_filters.NumberFilter(
-        field_name="record__utiliation_rate",
+        field_name="last_record_utiliation_rate",
         lookup_expr='gte',
         label="Utilization Rate From",
     )
     from_date = django_filters.DateFilter(
-        field_name="record__created_at",
+        field_name="last_record_created_at",
         label="From Data",
         lookup_expr="gte",
         # widget=django_filters.widgets.RangeWidget(attrs={"type": "date"}), # type: ignore
     )
     to_date = django_filters.DateFilter(
-        field_name="record__created_at",
+        field_name="last_record_created_at",
         label="To Data",
         lookup_expr="lte",
         # widget=django_filters.widgets.RangeWidget(attrs={"type": "date"}), # type: ignore
